@@ -22,10 +22,11 @@ class TagSerializer(serializers.ModelSerializer):
 class BlogPostSerializer(serializers.ModelSerializer):
     comments = serializers.StringRelatedField(many=True, read_only=True)
     tags = TagSerializer(many=True, required=False, read_only=True)
-
+    content_as_html = serializers.ReadOnlyField()
+    
     class Meta:
         model = BlogPost
-        fields = ['id', 'title', 'content', 'author', 'category', 'published_date', 'created_date', 'tags', 'comments']
+        fields = ['id', 'title', 'content', 'author', 'category', 'published_date', 'created_date', 'tags', 'comments', 'content_as_html']
     
     def validate_title(self, value):
         if not value:

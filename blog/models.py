@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-#from django.utils.text import slugify
 from django.utils.timezone import now
 from django.conf import settings
+import markdown
+from django.utils.safestring import mark_safe
 
 
 User = get_user_model()
@@ -34,6 +35,12 @@ class BlogPost(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     status = models.CharField(max_length=10,choices=STATUS_CHOICES, default='draft')
 
+
+    @property
+    def content_as_html(self):
+        
+        return mark_safe(markdown.markdown(self.content))
+    
     def publish(self):
         self.status = 'published'
         self.published_date=now()
