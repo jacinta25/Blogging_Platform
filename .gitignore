@@ -2,9 +2,7 @@
 venv/
 
 # Django specific
-*.pyc
-__pycache__/
-db.sqlite3
 
-# Other
-*.log
+__pycache__/
+
+
