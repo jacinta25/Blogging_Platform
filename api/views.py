@@ -13,6 +13,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from django.db import models
 from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
 
 User = get_user_model()
 
@@ -20,6 +22,42 @@ User = get_user_model()
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    # Custom action to handle user registration
+    @action(detail=False, methods=['post'], url_path='register', permission_classes=[])
+    def register(self, request):
+        # Get data from the request
+        email = request.data.get('email')
+        password = request.data.get('password')
+        username = request.data.get('username', '')
+        bio = request.data.get('bio', '')
+        
+
+        # Validate the input data
+        if not email or not password:
+            return Response({"error": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "Email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Use the serializer to create the user
+        user_data = {
+            'email': email,
+            'password': password,
+            'username': username,
+            'bio': bio
+            
+        }
+        serializer = UserSerializer(data=user_data)
+
+        # Validate and save the user
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "message": "User registered successfully.",
+                "user": UserSerializer(user).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # Allows a user to subscribe to another user(author)
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -232,4 +270,29 @@ class CommentViewSet(ModelViewSet):
             raise PermissionDenied("You cannot delete another user's comment.")
         instance.delete()
 
+class UserLoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
+        # Validate the input
+        if not email or not password:
+            return Response({"detail": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Check the password
+        if not user.check_password(password):
+            return Response({"detail": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Generate and return the token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        return Response({
+            "access": access_token,
+            "refresh": str(refresh)
+        })

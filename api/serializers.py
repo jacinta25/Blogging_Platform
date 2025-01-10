@@ -14,11 +14,21 @@ from blog.models import (
 #Get the User model for authentication and user data handling
 User = get_user_model()
 
+
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)  # Ensure password is write-only
     
     class Meta:
         model = User
-        fields = ['id','username', 'email', 'bio', 'profile_picture']
+        fields = ['id', 'username', 'email', 'password', 'bio']
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')  # Pop the password before saving
+        user = User(**validated_data)  # Create a new User instance
+        user.set_password(password)  # Hash the password
+        user.save()  # Save the user to the database
+        return user
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,11 +42,15 @@ class TagSerializer(serializers.ModelSerializer):
         
 class BlogPostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True) #nested serializer for author details
-    category = CategorySerializer(read_only=True)#nested serializer for category
+    #category = serializers.StringRelatedField(many=True, read_only=True)
+    #category = CategorySerializer(read_only=True)#nested serializer for category
     tags = TagSerializer(many=True, read_only=True)
     comments = serializers.StringRelatedField(many=True, read_only=True)# Related comments
     content_as_html = serializers.ReadOnlyField()# HTML-rendered content
-     
+    category = serializers.SlugRelatedField(slug_field='name', queryset=Category.objects.all())
+
+    
+
     class Meta:
         model = BlogPost
         fields = ['id', 'title', 'content', 'author', 'category', 'published_date', 'created_date', 'tags', 'comments', 'content_as_html']

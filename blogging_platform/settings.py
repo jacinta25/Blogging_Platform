@@ -25,9 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['jacinta25.pythonanywhere.com']
+#ALLOWED_HOSTS = ['jacinta25.pythonanywhere.com']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -86,11 +87,14 @@ WSGI_APPLICATION = 'blogging_platform.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Use SQLite database engine
-        'NAME': BASE_DIR / 'db.sqlite3',  # Path to your SQLite database file
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'blogging_platform',
+        'USER': 'jacinta25',
+        'PASSWORD': 'condition2030.KE',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -150,7 +154,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60)
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=360)
 }
 
 MEDIA_URL = '/media/'

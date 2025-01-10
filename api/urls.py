@@ -6,6 +6,7 @@ from .views import (
     CategoryViewSet,
     TagViewSet,
     CommentViewSet,
+    UserLoginView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -13,11 +14,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 router = DefaultRouter()
 
 # Register viewsets with the router
-router.register(r'users', UserViewSet, basename='user')
-router.register(r'posts', BlogPostViewSet, basename='post')
-router.register(r'categories', CategoryViewSet, basename='category')
-router.register(r'tags', TagViewSet, basename='tag')
-router.register(r'comments', CommentViewSet, basename='comment')
+router.register('users', UserViewSet)
+router.register('posts', BlogPostViewSet)
+router.register('categories', CategoryViewSet)
+router.register('tags', TagViewSet)
+router.register('comments', CommentViewSet)
 
 # Define URL patterns
 urlpatterns = [
@@ -25,6 +26,8 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
+     # Your custom login view, if needed
+    path('api/users/login/', UserLoginView.as_view(), name='user_login'),
     # Custom actions for BlogPostViewSet
     path('posts/category/<str:category_name>/', 
          BlogPostViewSet.as_view({'get': 'posts_by_category'}), 
